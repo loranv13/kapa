@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Planning Hebdomadaire</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table {
+            width: 70%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+        thead tr {
+            background-color: #e0f0ff;
+        }
+        tr:nth-child(even) { background-color: #fafafa; }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 4px;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 100px;
+        }
+        td:nth-child(3) input {
+            width: 3ch;
+        }
+        .add-row {
+            margin-bottom: 20px;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+    <label for="yearSelect">Année:</label>
+    <select id="yearSelect"></select>
+    <label for="monthSelect">Mois:</label>
+    <select id="monthSelect"></select>
+    <div id="tables"></div>
+    <script>
+        const yearSelect = document.getElementById('yearSelect');
+        const monthSelect = document.getElementById('monthSelect');
+        const tablesDiv = document.getElementById('tables');
+
+        function createRow(tbody) {
+            const row = document.createElement('tr');
+            for (let i = 0; i < 3; i++) {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                if (i === 1) td.style.width = '100px';
+                if (i === 2) input.maxLength = 3;
+                td.appendChild(input);
+                row.appendChild(td);
+            }
+            for (let i = 0; i < 7; i++) {
+                const td = document.createElement('td');
+                td.textContent = '0';
+                td.addEventListener('click', () => {
+                    td.textContent = (parseFloat(td.textContent) + 0.5).toFixed(1);
+                    updateCapacities(tbody);
+                });
+                td.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    td.textContent = (parseFloat(td.textContent) - 0.5).toFixed(1);
+                    updateCapacities(tbody);
+                });
+                row.appendChild(td);
+            }
+            return row;
+        }
+
+        function createCapacityRow(tbody) {
+            const row = document.createElement('tr');
+            row.className = 'capacity-row';
+            for (let i = 0; i < 3; i++) {
+                row.appendChild(document.createElement('td'));
+            }
+            for (let i = 0; i < 7; i++) {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.addEventListener('input', () => updateCapacities(tbody));
+                td.appendChild(input);
+                row.appendChild(td);
+            }
+            return row;
+        }
+
+        function updateCapacities(tbody) {
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const capRow = rows[0];
+            const dataRows = rows.slice(1);
+            for (let i = 3; i < capRow.cells.length; i++) {
+                const capCell = capRow.cells[i];
+                const capVal = parseFloat(capCell.querySelector('input').value) || 0;
+                let sum = 0;
+                dataRows.forEach(r => {
+                    sum += parseFloat(r.cells[i].textContent) || 0;
+                });
+                if (capVal < sum) {
+                    capCell.style.backgroundColor = 'red';
+                } else {
+                    capCell.style.backgroundColor = '';
+                }
+            }
+        }
+
+        function initSelectors() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            [currentYear - 1, currentYear, currentYear + 1].forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            });
+            const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            months.forEach((m, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = m;
+                if (idx === now.getMonth()) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+        }
+
+        function generateTables() {
+            const year = parseInt(yearSelect.value);
+            const month = parseInt(monthSelect.value);
+            tablesDiv.innerHTML = '';
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const start = new Date(firstDay);
+            const day = start.getDay();
+            const diff = (day === 0 ? -6 : 1 - day); // start at Monday
+            start.setDate(start.getDate() + diff);
+
+            for (let weekStart = new Date(start); weekStart <= lastDay; weekStart.setDate(weekStart.getDate() + 7)) {
+                const wrapper = document.createElement('div');
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const headRow = document.createElement('tr');
+                ['Tache', 'Charge', 'Ingé'].forEach(text => {
+                    const th = document.createElement('th');
+                    th.textContent = text;
+                    headRow.appendChild(th);
+                });
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(weekStart);
+                    d.setDate(weekStart.getDate() + i);
+                    const th = document.createElement('th');
+                    if (d.getMonth() === month) {
+                        th.textContent = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+                    } else {
+                        th.textContent = d.toLocaleDateString('fr-FR', { weekday: 'short' });
+                    }
+                    headRow.appendChild(th);
+                }
+                thead.appendChild(headRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+                tbody.appendChild(createCapacityRow(tbody));
+                tbody.appendChild(createRow(tbody));
+                tbody.appendChild(createRow(tbody));
+                updateCapacities(tbody);
+
+                const addBtn = document.createElement('button');
+                addBtn.textContent = '+';
+                addBtn.className = 'add-row';
+                addBtn.addEventListener('click', () => {
+                    tbody.appendChild(createRow(tbody));
+                    updateCapacities(tbody);
+                });
+
+                wrapper.appendChild(table);
+                wrapper.appendChild(addBtn);
+                tablesDiv.appendChild(wrapper);
+            }
+        }
+
+        initSelectors();
+        generateTables();
+        yearSelect.addEventListener('change', generateTables);
+        monthSelect.addEventListener('change', generateTables);
+    </script>
+</body>
+</html>
