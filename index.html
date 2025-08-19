@@ -6,20 +6,34 @@
     <style>
         body { font-family: Arial, sans-serif; }
         table {
-            width: 70%;
-            margin: 20px auto;
+            width: 100%;
             border-collapse: collapse;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
+        th {
+            background-color: #4a90e2;
+            color: #fff;
+            padding: 5px;
             text-align: center;
+            font-size: 12px;
+            border-bottom: 1px solid #e0e0e0;
         }
-        thead tr {
-            background-color: #e0f0ff;
+        td {
+            padding: 3px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 9px;
         }
-        tr:nth-child(even) { background-color: #fafafa; }
+        tr:nth-child(even) {
+            background-color: #f2f7fc;
+        }
+        tr:hover {
+            background-color: #e6f1fa;
+        }
         input {
             width: 100%;
             box-sizing: border-box;
