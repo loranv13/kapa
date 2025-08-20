@@ -27,10 +27,10 @@
             border-radius: 3px;
             padding: 4px;
         }
-        th:nth-child(2), td:nth-child(2) {
+        th:nth-child(3), td:nth-child(3) {
             width: 100px;
         }
-        td:nth-child(3) input {
+        td:nth-child(4) input {
             width: 3ch;
         }
         .add-row {
@@ -50,8 +50,20 @@
         const monthSelect = document.getElementById('monthSelect');
         const tablesDiv = document.getElementById('tables');
 
+        function createDeleteCell(row, tbody) {
+            const td = document.createElement('td');
+            td.textContent = '🗑️';
+            td.style.cursor = 'pointer';
+            td.addEventListener('click', () => {
+                row.remove();
+                updateCapacities(tbody);
+            });
+            return td;
+        }
+
         function createRow(tbody) {
             const row = document.createElement('tr');
+            row.appendChild(createDeleteCell(row, tbody));
             for (let i = 0; i < 3; i++) {
                 const td = document.createElement('td');
                 const input = document.createElement('input');
@@ -81,6 +93,7 @@
         function createCapacityRow(tbody) {
             const row = document.createElement('tr');
             row.className = 'capacity-row';
+            row.appendChild(createDeleteCell(row, tbody));
             for (let i = 0; i < 3; i++) {
                 row.appendChild(document.createElement('td'));
             }
@@ -100,7 +113,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             const capRow = rows[0];
             const dataRows = rows.slice(1);
-            for (let i = 3; i < capRow.cells.length; i++) {
+            for (let i = 4; i < capRow.cells.length; i++) {
                 const capCell = capRow.cells[i];
                 const capVal = parseFloat(capCell.querySelector('input').value) || 0;
                 let sum = 0;
@@ -151,6 +164,7 @@
                 const table = document.createElement('table');
                 const thead = document.createElement('thead');
                 const headRow = document.createElement('tr');
+                headRow.appendChild(document.createElement('th'));
                 ['Tache', 'Charge', 'Ingé'].forEach(text => {
                     const th = document.createElement('th');
                     th.textContent = text;
